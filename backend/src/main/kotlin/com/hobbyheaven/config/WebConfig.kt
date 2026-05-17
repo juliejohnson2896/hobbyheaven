@@ -17,7 +17,6 @@ class WebConfig : WebMvcConfigurer {
             .addResolver(PathResourceResolver().apply {
                 // SPA fallback: any path not matching a real file → index.html
                 setAllowedLocations(ClassPathResource("static/"))
-//                setDefaultLocations(ClassPathResource("static/"))
             })
     }
 }

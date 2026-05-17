@@ -1,5 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { BookOpen, Heart, Library, Settings, Layers } from 'lucide-react'
+import { BookOpen, Heart, Library, Settings, Layers, Sun, Moon } from 'lucide-react'
+import { useTheme } from '../hooks/useTheme'
 
 const navItems = [
   { to: '/library',    icon: Library,   label: 'Library'    },
@@ -9,6 +10,8 @@ const navItems = [
 ]
 
 export default function Layout() {
+  const { isDark, toggle } = useTheme()
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-cream)' }}>
 
@@ -84,9 +87,26 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* Version */}
-        <div style={{ padding: '0 24px', fontSize: '0.7rem', color: 'var(--color-muted)' }}>
-          v0.1.0
+        {/* Theme toggle + version */}
+        <div style={{ padding: '0 16px 0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '0.7rem', color: 'var(--color-muted)' }}>v0.1.0</span>
+          <button
+            onClick={toggle}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            style={{
+              background: 'var(--color-parchment)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '6px 8px',
+              cursor: 'pointer',
+              color: 'var(--color-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {isDark ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
         </div>
       </aside>
 

@@ -123,6 +123,20 @@ export interface Page<T> {
   number: number
 }
 
+export interface CreatePatternRequest {
+  title: string
+  description?: string
+  difficulty: Difficulty
+  author?: string
+  sourceUrl?: string
+  hobbyTypeId: string
+  categoryIds?: Set<string>
+  tagNames?: Set<string>
+  materials?: { name: string; quantity?: number; unit?: string; notes?: string; sortOrder?: number }[]
+  metadata?: Record<string, unknown>
+  instructions?: Record<string, unknown>[]
+}
+
 export interface ApiError {
   status: number
   message: string

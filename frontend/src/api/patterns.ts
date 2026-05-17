@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
-import type { Pattern, PatternSummary, Page } from '../types'
+import type { Pattern, PatternSummary, Page, CreatePatternRequest } from '../types'
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ export function usePattern(id: string) {
 export function useCreatePattern() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: Partial<Pattern>) => {
+    mutationFn: async (payload: CreatePatternRequest) => {
       const { data } = await apiClient.post<Pattern>('/patterns', payload)
       return data
     },

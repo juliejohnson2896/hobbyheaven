@@ -4,9 +4,11 @@ import com.hobbyheaven.domain.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Repository
@@ -16,6 +18,32 @@ interface UserRepository : JpaRepository<User, UUID> {
     fun findByOidcSubject(subject: String): User?
     fun existsByUsername(username: String): Boolean
     fun existsByEmail(email: String): Boolean
+
+    @Query(
+        value = "SELECT pattern_id FROM user_favourites WHERE user_id = :userId",
+        nativeQuery = true,
+    )
+    fun findFavouritePatternIds(@Param("userId") userId: UUID): List<UUID>
+
+    @Modifying
+    @Transactional
+    @Query(
+        value = """
+            INSERT INTO user_favourites (user_id, pattern_id, created_at)
+            VALUES (:userId, :patternId, now())
+            ON CONFLICT DO NOTHING
+        """,
+        nativeQuery = true,
+    )
+    fun addFavourite(@Param("userId") userId: UUID, @Param("patternId") patternId: UUID)
+
+    @Modifying
+    @Transactional
+    @Query(
+        value = "DELETE FROM user_favourites WHERE user_id = :userId AND pattern_id = :patternId",
+        nativeQuery = true,
+    )
+    fun removeFavourite(@Param("userId") userId: UUID, @Param("patternId") patternId: UUID)
 }
 
 @Repository
@@ -52,15 +80,17 @@ interface PatternRepository : JpaRepository<Pattern, UUID> {
         LEFT JOIN FETCH p.tags
         WHERE (:hobbyTypeId IS NULL OR p.hobbyType.id = :hobbyTypeId)
           AND (:difficulty IS NULL OR p.difficulty = :difficulty)
-          AND (:search IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))
+          AND (NULLIF(:search, '') IS NULL
+               OR p.title ILIKE CONCAT('%', :search, '%')
+               OR p.description ILIKE CONCAT('%', :search, '%'))
     """,
-    countQuery = """
+        countQuery = """
         SELECT COUNT(DISTINCT p) FROM Pattern p
         WHERE (:hobbyTypeId IS NULL OR p.hobbyType.id = :hobbyTypeId)
           AND (:difficulty IS NULL OR p.difficulty = :difficulty)
-          AND (:search IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%'))
-               OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))
+          AND (NULLIF(:search, '') IS NULL
+               OR p.title ILIKE CONCAT('%', :search, '%')
+               OR p.description ILIKE CONCAT('%', :search, '%'))
     """)
     fun findWithFilters(
         @Param("hobbyTypeId") hobbyTypeId: UUID?,
