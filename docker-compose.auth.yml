@@ -1,0 +1,41 @@
+# Auth overlay — run with:
+# docker compose -f docker-compose.yml -f docker-compose.auth.yml up
+
+services:
+
+  app:
+    environment:
+      AUTH_ENABLED: "true"
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-hobbyheaven}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-hobbyheaven-app}
+      SPRING_PROFILES_ACTIVE: auth
+    depends_on:
+      keycloak:
+        condition: service_healthy
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: hobbyheaven-keycloak
+    restart: unless-stopped
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-hobbyheaven}
+      KC_DB_USERNAME: ${DB_USER:-hobbyheaven}
+      KC_DB_PASSWORD: ${DB_PASSWORD:-hobbyheaven}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-changeme}
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import
+    ports:
+      - "${KEYCLOAK_PORT:-9080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s

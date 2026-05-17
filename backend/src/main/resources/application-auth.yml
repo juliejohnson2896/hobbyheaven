@@ -1,0 +1,15 @@
+# This config is merged in when the 'auth' Spring profile is active.
+# Activated automatically when AUTH_ENABLED=true via SecurityConfig.
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL:http://keycloak:8080}/realms/${KEYCLOAK_REALM:hobbyheaven}
+          jwk-set-uri: ${KEYCLOAK_URL:http://keycloak:8080}/realms/${KEYCLOAK_REALM:hobbyheaven}/protocol/openid-connect/certs
+
+keycloak:
+  url: ${KEYCLOAK_URL:http://keycloak:8080}
+  realm: ${KEYCLOAK_REALM:hobbyheaven}
+  client-id: ${KEYCLOAK_CLIENT_ID:hobbyheaven-app}

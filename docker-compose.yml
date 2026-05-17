@@ -1,0 +1,58 @@
+services:
+
+  app:
+    image: hobbyheaven:latest
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: hobbyheaven
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      # Database
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-hobbyheaven}
+      DB_USER: ${DB_USER:-hobbyheaven}
+      DB_PASSWORD: ${DB_PASSWORD:-hobbyheaven}
+      # Storage
+      STORAGE_PATH: /data
+      # Auth
+      AUTH_ENABLED: ${AUTH_ENABLED:-false}
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-hobbyheaven}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-hobbyheaven-app}
+    volumes:
+      - ${STORAGE_PATH:-hobbyheaven_data}:/data
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  db:
+    image: postgres:16-alpine
+    container_name: hobbyheaven-db
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-hobbyheaven}
+      POSTGRES_USER: ${DB_USER:-hobbyheaven}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hobbyheaven}
+    volumes:
+      - hobbyheaven_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hobbyheaven} -d ${DB_NAME:-hobbyheaven}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  hobbyheaven_db:
+  hobbyheaven_data:
