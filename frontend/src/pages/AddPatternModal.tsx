@@ -52,7 +52,7 @@ export default function AddPatternModal({ onClose }: Props) {
   const [author, setAuthor]           = useState('')
   const [sourceUrl, setSourceUrl]     = useState('')
   const [hobbyTypeId, setHobbyTypeId] = useState('')
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set())
+  const [selectedCategories, setSelectedCategories] = useState<Array<string>>([])
   const [tagInput, setTagInput]       = useState('')
   const [tags, setTags]               = useState<string[]>([])
   const [materials, setMaterials]     = useState<{ name: string; quantity: string; unit: string }[]>([])
@@ -86,7 +86,7 @@ export default function AddPatternModal({ onClose }: Props) {
       sourceUrl:     sourceUrl   || undefined,
       hobbyTypeId,
       categoryIds:   selectedCategories,
-      tagNames:      new Set(tags),
+      tagNames:      [...tags],
       materials:     materials
         .filter(m => m.name.trim())
         .map((m, i) => ({
@@ -159,7 +159,7 @@ export default function AddPatternModal({ onClose }: Props) {
             </div>
 
             <Field label="Hobby Type *">
-              <select style={INPUT} value={hobbyTypeId} onChange={e => { setHobbyTypeId(e.target.value); setSelectedCategories(new Set()) }}>
+              <select style={INPUT} value={hobbyTypeId} onChange={e => { setHobbyTypeId(e.target.value); setSelectedCategories([]) }}>
                 <option value="">Select…</option>
                 {hobbyTypes?.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
               </select>
@@ -185,14 +185,14 @@ export default function AddPatternModal({ onClose }: Props) {
             <Field label="Categories">
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {categories.map(cat => {
-                  const selected = selectedCategories.has(cat.id)
+                  const selected = selectedCategories.includes(cat.id)
                   return (
                     <button
                       key={cat.id}
                       type="button"
                       onClick={() => setSelectedCategories(prev => {
-                        const next = new Set(prev)
-                        selected ? next.delete(cat.id) : next.add(cat.id)
+                        const next = [...prev]
+                        selected ? next.filter(item => item !== cat.id) : next.push(cat.id)
                         return next
                       })}
                       style={{

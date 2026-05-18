@@ -130,8 +130,8 @@ export interface CreatePatternRequest {
   author?: string
   sourceUrl?: string
   hobbyTypeId: string
-  categoryIds?: Set<string>
-  tagNames?: Set<string>
+  categoryIds?: string[]
+  tagNames?: string[]
   materials?: { name: string; quantity?: number; unit?: string; notes?: string; sortOrder?: number }[]
   metadata?: Record<string, unknown>
   instructions?: Record<string, unknown>[]

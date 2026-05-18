@@ -52,6 +52,7 @@ export function useCreatePattern() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: CreatePatternRequest) => {
+      console.log("Payload: ", payload)
       const { data } = await apiClient.post<Pattern>('/patterns', payload)
       return data
     },
